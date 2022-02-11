@@ -145,10 +145,7 @@ Public Sub CreatePhase(Authorization As String, UserAgent As String, ProjectID A
     ' Create a new Phase for a Project on Float
     
     ' Notes:
-    ' Date parameters must be in one of the following forms:
-    ' - YYYY-MM-DD
-    ' - YY-MM-DD
-    ' - DD-MM-YYYY
+    ' Date parameters must be in the form YYYY-MM-DD
     ' Color is a hexidecimal 6 character string which defaults to the project color if nothing is passed
     ' BudgetTotal is either hours or currency depending on which parameter the project uses
     
