@@ -136,6 +136,86 @@ Public Sub CreatePerson(Authorization As String, UserAgent As String, Name As St
 End Sub
 
 
+Public Sub CreatePhase(Authorization As String, UserAgent As String, ProjectID As Long, Name As String, StartDate As String, _
+    EndDate As String, Optional Color As String, Optional Notes As String, Optional BudgetTotal As Double, _
+    Optional DefaultHourlyRate As Double, Optional Billable As Boolean = True, Optional Tentative As Boolean = False, _
+    Optional Active As Boolean = True)
+
+    ' Purpose:
+    ' Create a new Phase for a Project on Float
+    
+    ' Notes:
+    ' Date parameters must be in one of the following forms:
+    ' - YYYY-MM-DD
+    ' - YY-MM-DD
+    ' - DD-MM-YYYY
+    ' Color is a hexidecimal 6 character string which defaults to the project color if nothing is passed
+    ' BudgetTotal is either hours or currency depending on which parameter the project uses
+    
+    Dim Request As Object
+    Set Request = CreateObject("MSXML2.XMLHTTP")
+    
+    With Request
+
+        .Open "POST", "https://api.float.com/v3/phases", False
+
+        .setRequestHeader "Authorization", "Bearer " & Authorization
+        .setRequestHeader "User-Agent", UserAgent
+        .setRequestHeader "Content-Type", "application/json"
+        
+    End With
+    
+    Dim Body As String, Message As String
+    Body = "{" & Chr(34) & "project_id" & Chr(34) & ":" & Chr(34) & ProjectID & Chr(34)
+    Body = Body & "," & Chr(34) & "name" & Chr(34) & ":" & Chr(34) & Name & Chr(34)
+    Body = Body & "," & Chr(34) & "start_date" & Chr(34) & ":" & Chr(34) & StartDate & Chr(34)
+    Body = Body & "," & Chr(34) & "end_date" & Chr(34) & ":" & Chr(34) & EndDate & Chr(34)
+    
+    If Color <> "" Then
+        Body = Body & "," & Chr(34) & "color" & Chr(34) & ":" & Chr(34) & Color & Chr(34)
+    End If
+    
+    If Notes <> "" Then
+        Body = Body & "," & Chr(34) & "notes" & Chr(34) & ":" & Chr(34) & Notes & Chr(34)
+    End If
+    
+    If BudgetTotal <> 0 Then
+        Body = Body & "," & Chr(34) & "budget_total" & Chr(34) & ":" & Chr(34) & BudgetTotal & Chr(34)
+    End If
+    
+    If DefaultHourlyRate <> 0 Then
+        Body = Body & "," & Chr(34) & "default_hourly_rate" & Chr(34) & ":" & Chr(34) & DefaultHourlyRate & Chr(34)
+    End If
+    
+    If Not Billable Then
+        Body = Body & "," & Chr(34) & "non_billable" & Chr(34) & ":" & 1
+    End If
+    
+    If Tentative Then
+        Body = Body & "," & Chr(34) & "tentative" & Chr(34) & ":" & 1
+    End If
+    
+    If Not Active Then
+        Body = Body & "," & Chr(34) & "active" & Chr(34) & ":" & 0
+    End If
+    
+    Body = Body & "}"
+    Request.send Body
+    
+    ' Invalid field
+    If Request.Status = 422 Then
+    
+        Message = "No phase created." & vbNewLine & vbNewLine
+        Message = Message & "Float API responded with: 422 Unprocessable Entity - The data supplied has failed validation." & vbNewLine & vbNewLine
+        Message = Message & Request.responseText
+        
+        MsgBox Prompt:=Message, Buttons:=vbCritical, Title:="Bad Parameters"
+        
+    End If
+
+End Sub
+
+
 Public Sub CreateProject(Authorization As String, UserAgent As String, Name As String, Optional ClientID As Long, Optional Color As String, _
     Optional Notes As String, Optional Tags As Collection, Optional BudgetType As Long, Optional BudgetTotal As Double, _
     Optional DefaultHourlyRate As Double, Optional NonBillable As Boolean = False, Optional Tentative As Boolean = False, _
