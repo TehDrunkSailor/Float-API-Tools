@@ -473,3 +473,92 @@ Public Sub CreateTask(Authorization As String, UserAgent As String, ProjectID As
 
 End Sub
 
+
+Public Sub CreateTimeOff(Authorization As String, UserAgent As String, TimeOffTypeID As Long, StartDate As String, EndDate As String, _
+    PeopleIDs As Collection, Optional FullDay As Boolean = True, Optional Hours As Double = 8, Optional StartTime As String, _
+    Optional TimeOffNotes As String, Optional RepeatState As Long = 0, Optional RepeatEnd As String)
+
+    ' Purpose:
+    ' Create a new Time Off in Float
+    
+    ' Parameters:
+    ' Authorization - your unique API token provided by Float
+    ' UserAgent - organization name and email address ex. "John's Bakery (John.Doe@Bakery.com)"
+    ' TimeOffTypeID - the time_off_id of this type of time off in Float
+    ' StartDate - the start date of this time off in the form YYYY-MM-DD
+    ' EndDate - the end date of this time off in the form YYYY-MM-DD
+    ' PeopleIDs - all of the people_ids on Float of the people who have this time off
+    ' FullDay - whether or not this time off lasts the entire day
+    '         - if True, the Hours parameter is ignored
+    ' Hours - number of hours per day for this time off
+    ' StartTime - the 24hr time the time off starts in the form HH:MM
+    ' TimeOffNotes - any notes on this time off
+    ' RepeatState - how often this time off repeats
+    ' RepeatEnd - the last date that the time off's start_date can repeat to in the form YYYY-MM-DD
+    '           - only required if RepeatState is not 0 (default)
+    
+    ' Parameter enumerations:
+    ' RepeatState - 0=No repeat (defualt), 1=Weekly, 2=Monthly, 3=Every 2nd week, 4=Every 3rd week, 5=Every 6th week, 6=Every 2 months,
+    '             - 7=Every 3 months, 8=Every 6 months, 9=Yearly
+    
+    
+    Dim Request As Object
+    Set Request = CreateObject("MSXML2.XMLHTTP")
+    
+    With Request
+
+        .Open "POST", "https://api.float.com/v3/timeoffs", False
+
+        .setRequestHeader "Authorization", "Bearer " & Authorization
+        .setRequestHeader "User-Agent", UserAgent
+        .setRequestHeader "Content-Type", "application/json"
+        
+    End With
+    
+    Dim Body As String, Message As String
+    Body = "{" & Chr(34) & "timeoff_type_id" & Chr(34) & ":" & Chr(34) & TimeOffTypeID & Chr(34)
+    Body = Body & "," & Chr(34) & "start_date" & Chr(34) & ":" & Chr(34) & StartDate & Chr(34)
+    Body = Body & "," & Chr(34) & "end_date" & Chr(34) & ":" & Chr(34) & EndDate & Chr(34)
+    
+    Dim PeopleIDsString As String
+    PeopleIDsString = "["
+    
+    Dim p As Variant
+    For Each p In PeopleIDs
+        PeopleIDsString = PeopleIDsString & Chr(34) & p & Chr(34) & ","
+    Next p
+    
+    PeopleIDsString = Left(PeopleIDsString, Len(PeopleIDsString) - 1)
+    PeopleIDsString = PeopleIDsString & "]"
+    
+    Body = Body & "," & Chr(34) & "people_ids" & Chr(34) & ":" & PeopleIDsString
+    
+    If FullDay Then
+        Body = Body & "," & Chr(34) & "full_day" & Chr(34) & ":" & Chr(34) & 1 & Chr(34)
+    
+    Else
+        Body = Body & "," & Chr(34) & "full_day" & Chr(34) & ":" & Chr(34) & 0 & Chr(34)
+        Body = Body & "," & Chr(34) & "hours" & Chr(34) & ":" & Chr(34) & Hours & Chr(34)
+        
+    End If
+    
+    Body = Body & "," & Chr(34) & "start_time" & Chr(34) & ":" & Chr(34) & StartTime & Chr(34)
+    Body = Body & "," & Chr(34) & "timeoff_notes" & Chr(34) & ":" & Chr(34) & TimeOffNotes & Chr(34)
+    Body = Body & "," & Chr(34) & "repeat_state" & Chr(34) & ":" & Chr(34) & RepeatState & Chr(34)
+    Body = Body & "," & Chr(34) & "repeat_end" & Chr(34) & ":" & Chr(34) & RepeatEnd & Chr(34)
+    
+    Body = Body & "}"
+    Request.send Body
+    
+    ' Invalid field
+    If Request.Status = 422 Then
+    
+        Message = "No time off created." & vbNewLine & vbNewLine
+        Message = Message & "Float API responded with: 422 Unprocessable Entity - The data supplied has failed validation." & vbNewLine & vbNewLine
+        Message = Message & Request.responseText
+        
+        MsgBox Prompt:=Message, Buttons:=vbCritical, Title:="Bad Parameters"
+        
+    End If
+
+End Sub
