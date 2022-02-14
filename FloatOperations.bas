@@ -144,10 +144,20 @@ Public Sub CreatePhase(Authorization As String, UserAgent As String, ProjectID A
     ' Purpose:
     ' Create a new Phase for a Project on Float
     
-    ' Notes:
-    ' Date parameters must be in the form YYYY-MM-DD
-    ' Color is a hexidecimal 6 character string which defaults to the project color if nothing is passed
-    ' BudgetTotal is either hours or currency depending on which parameter the project uses
+    ' Parameters:
+    ' Authorization - your unique API token provided by Float
+    ' UserAgent - organization name and email address ex. "John's Bakery (John.Doe@Bakery.com)"
+    ' ProjectID - the ID of the project on Float
+    ' Name - the name of the phase
+    ' StartDate - the date the project starts in one of the following forms: YYYY-MM-DD, YY-MM-DD, DD-MM-YYYY
+    ' EndDate - the date the project ends in one of the following forms: YYYY-MM-DD, YY-MM-DD, DD-MM-YYYY
+    ' Color - the hexidecimal color the phase; defaults to the project color if nothing is passed
+    ' Notes - notes on the phase
+    ' BudgetTotal - hours or currency this phase has alloted to it depending on which parameter the project uses
+    ' DefaultHourlyRate - hourly rate of people working on this phase
+    ' Billable - whether or not the phase is billable
+    ' Tentative - whether of not the phase is tentative
+    ' Active - whether or not the phase is active
     
     Dim Request As Object
     Set Request = CreateObject("MSXML2.XMLHTTP")
