@@ -311,5 +311,124 @@ Public Sub CreateProject(Authorization As String, UserAgent As String, Name As S
 End Sub
 
 
+Public Sub CreateTask(Authorization As String, UserAgent As String, ProjectID As Long, Hours As Double, PeopleIDs As Collection, _
+    Optional Name As String, Optional PhaseID As Long, Optional StartDate As String, Optional EndDate As String, Optional StartTime As String, _
+    Optional Status As Long = 2, Optional Notes As String, Optional RepeatState As Long = 0, Optional RepeatEndDate As String)
 
+    ' Purpose:
+    ' Create a new Task for a Project on Float
+    
+    ' Parameters:
+    ' Authorization - your unique API token provided by Float
+    ' UserAgent - organization name and email address ex. "John's Bakery (John.Doe@Bakery.com)"
+    ' ProjectID - the ID of the project on Float
+    ' Hours - number of hours per day
+    ' PeopleIDs - all of the the people_ids on Float that this task will be assigned to
+    ' Name - the name of the task
+    ' PhaseID - the ID of the project phase on Float
+    ' StartDate - the date the task starts in the form YYYY-MM-DD
+    ' EndDate - the date the task ends in the form YYYY-MM-DD
+    '         - if passed without a StartDate, the task will only span 1 day starting today
+    ' StartTime - the 24hr time the task starts in the form HH:MM
+    ' Status - status of the task
+    ' Notes - notes on the task
+    ' RepeatState - how often the task repeats
+    ' RepeatEndDate - the last date that the task's start date can repeat to in the form YYYY-MM-DD
+    '               - only required if RepeatState is not 0 (default)
+    
+    ' Parameter enumerations:
+    ' Status - 1=Tentative, 2=Confirmed (defualt), 3=Complete
+    ' RepeatState - 0=No repeat (defualt), 1=Weekly, 2=Monthly, 3=Every 2nd week, 4=Every 3rd week, 5=Every 6th week, 6=Every 2 months,
+    '             - 7=Every 3 months, 8=Every 6 months, 9=Yearly
+    
+    
+    Dim Request As Object
+    Set Request = CreateObject("MSXML2.XMLHTTP")
+    
+    With Request
+
+        .Open "POST", "https://api.float.com/v3/tasks", False
+
+        .setRequestHeader "Authorization", "Bearer " & Authorization
+        .setRequestHeader "User-Agent", UserAgent
+        .setRequestHeader "Content-Type", "application/json"
+        
+    End With
+    
+    Dim Body As String, Message As String
+    Body = "{" & Chr(34) & "project_id" & Chr(34) & ":" & Chr(34) & ProjectID & Chr(34)
+    Body = Body & "," & Chr(34) & "hours" & Chr(34) & ":" & Chr(34) & Hours & Chr(34)
+    
+    If Not PeopleIDs Is Nothing Then
+    
+        If PeopleIDs.Count = 1 Then
+            Body = Body & "," & Chr(34) & "people_id" & Chr(34) & ":" & Chr(34) & PeopleIDs(1) & Chr(34)
+            
+        Else
+            Dim PeopleIDsString As String
+            PeopleIDsString = "["
+            
+            Dim p As Variant
+            For Each p In PeopleIDs
+                PeopleIDsString = PeopleIDsString & Chr(34) & p & Chr(34) & ","
+            Next p
+            
+            PeopleIDsString = Left(PeopleIDsString, Len(PeopleIDsString) - 1)
+            PeopleIDsString = PeopleIDsString & "]"
+            
+            Body = Body & "," & Chr(34) & "people_ids" & Chr(34) & ":" & PeopleIDsString
+        
+        End If
+        
+    Else
+        MsgBox Prompt:="No task created.  PeopleIDs must have at least 1 member.", Buttons:=vbCritical, Title:="Bad Parameters"
+        Exit Sub
+        
+    End If
+    
+    If Name <> "" Then
+        Body = Body & "," & Chr(34) & "name" & Chr(34) & ":" & Chr(34) & Name & Chr(34)
+    End If
+    
+    If PhaseID <> 0 Then
+         Body = Body & "," & Chr(34) & "phase_id" & Chr(34) & ":" & Chr(34) & PhaseID & Chr(34)
+    End If
+    
+    If StartDate <> "" And EndDate <> "" Then
+        Body = Body & "," & Chr(34) & "start_date" & Chr(34) & ":" & Chr(34) & StartDate & Chr(34)
+        Body = Body & "," & Chr(34) & "end_date" & Chr(34) & ":" & Chr(34) & EndDate & Chr(34)
+    End If
+    
+    If StartTime <> "" Then
+        Body = Body & "," & Chr(34) & "start_time" & Chr(34) & ":" & Chr(34) & StartTime & Chr(34)
+    End If
+    
+    If Status = 1 Or Status = 2 Or Status = 3 Then
+        Body = Body & "," & Chr(34) & "status" & Chr(34) & ":" & Chr(34) & Status & Chr(34)
+    End If
+    
+    If Notes <> "" Then
+        Body = Body & "," & Chr(34) & "notes" & Chr(34) & ":" & Chr(34) & Notes & Chr(34)
+    End If
+    
+    If RepeatState <> 0 Then
+        Body = Body & "," & Chr(34) & "repeat_state" & Chr(34) & ":" & Chr(34) & RepeatState & Chr(34)
+        Body = Body & "," & Chr(34) & "repeat_end_date" & Chr(34) & ":" & Chr(34) & RepeatEndDate & Chr(34)
+    End If
+    
+    Body = Body & "}"
+    Request.send Body
+    
+    ' Invalid field
+    If Request.Status = 422 Then
+    
+        Message = "No task created." & vbNewLine & vbNewLine
+        Message = Message & "Float API responded with: 422 Unprocessable Entity - The data supplied has failed validation." & vbNewLine & vbNewLine
+        Message = Message & Request.responseText
+        
+        MsgBox Prompt:=Message, Buttons:=vbCritical, Title:="Bad Parameters"
+        
+    End If
+
+End Sub
 
