@@ -137,7 +137,7 @@ Public Sub CreatePerson(Authorization As String, UserAgent As String, Name As St
     
     ' Invalid field
     If Request.Status = 422 Then
-        Message = "No people created." & vbNewLine & vbNewLine
+        Message = "No person created." & vbNewLine & vbNewLine
         Message = Message & "Float API responded with: 422 Unprocessable Entity - The data supplied has failed validation." & vbNewLine & vbNewLine
         Message = Message & "Things to check:" & vbNewLine
         Message = Message & " - If a DepartmentID was passed, verify that it is correct" & vbNewLine
@@ -236,12 +236,33 @@ End Sub
 
 
 Public Sub CreateProject(Authorization As String, UserAgent As String, Name As String, Optional ClientID As Long, Optional Color As String, _
-    Optional Notes As String, Optional Tags As Collection, Optional BudgetType As Long, Optional BudgetTotal As Double, _
+    Optional Notes As String, Optional Tags As Collection, Optional BudgetType As Long = 0, Optional BudgetTotal As Double, _
     Optional DefaultHourlyRate As Double, Optional NonBillable As Boolean = False, Optional Tentative As Boolean = False, _
-    Optional Active As Boolean = True, Optional ProjectManagerID As Long, Optional AllPMsSchedule As Boolean = False)
+    Optional Active As Boolean = True, Optional ProjectManagerID As Long, Optional AllPMsSchedule As Boolean = True)
 
     ' Purpose:
     ' Create a new project on Float
+    
+    ' Parameters:
+    ' Authorization - your unique API token provided by Float
+    ' UserAgent - organization name and email address ex. "John's Bakery (John.Doe@Bakery.com)"
+    ' Name - name of the project
+    ' ClientID - the client_id of the project in Float
+    ' Color - the hexidecimal color the project
+    ' Notes - notes on the project
+    ' Tags - any tags related to the project
+    ' BudgetType - type of buget for the project
+    ' BudgetTotal - total budget for project when BudgetType is either 2 or 3
+    ' DefaultHourlyRate - default hourly rate of the project
+    ' NonBillable - whether or not the project is billable
+    ' Tentative - whether or not the project is tentative
+    ' Active - whether the project is active or archived
+    ' ProjectManagerID - the people_id of the project manager on Float
+    ' AllPMsSchedule - whether or not all PMs have scheduling rights
+    
+    ' Parameter enumerations:
+    ' BudgetType - 0=No budget (defualt), 1=Hours by project, 2=Fee by project, 3=Hourly fee
+    
     
     Dim Request As Object
     Set Request = CreateObject("MSXML2.XMLHTTP")
@@ -286,9 +307,7 @@ Public Sub CreateProject(Authorization As String, UserAgent As String, Name As S
         
         End If
 
-        If BudgetType <> 0 Then
-            Body = Body & "," & Chr(34) & "budget_type" & Chr(34) & ":" & Chr(34) & BudgetType & Chr(34)
-        End If
+        Body = Body & "," & Chr(34) & "budget_type" & Chr(34) & ":" & Chr(34) & BudgetType & Chr(34)
         
         If BudgetTotal <> 0 Then
             Body = Body & "," & Chr(34) & "budget_total" & Chr(34) & ":" & Chr(34) & BudgetTotal & Chr(34)
@@ -324,7 +343,7 @@ Public Sub CreateProject(Authorization As String, UserAgent As String, Name As S
         ' Invalid field
         If .Status = 422 Then
             Dim Message As String
-            Message = "No projects created.  Float API says: " & vbNewLine & vbNewLine & Split(.responseText, Chr(34))(7)
+            Message = "No project created.  Float API says: " & vbNewLine & vbNewLine & Split(.responseText, Chr(34))(7)
             MsgBox Prompt:=Message, Buttons:=vbCritical, Title:="Bad Parameters"
         End If
         
