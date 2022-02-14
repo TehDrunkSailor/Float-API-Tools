@@ -8,11 +8,23 @@ Public Sub CreatePerson(Authorization As String, UserAgent As String, Name As St
     ' Purpose:
     ' Create a new Person on Float
     
-    ' Notes:
-    ' Date parameters must be in one of the following forms:
-    ' - YYYY-MM-DD
-    ' - YY-MM-DD
-    ' - DD-MM-YYYY
+    ' Parameters:
+    ' Authorization - your unique API token provided by Float
+    ' UserAgent - organization name and email address ex. "John's Bakery (John.Doe@Bakery.com)"
+    ' Name - person's full name
+    ' Email - person's email address
+    ' JobTitle - person's job title
+    ' DepartmentID - the department_id of the department on Float
+    ' Notes - notes on the person
+    ' AutoEmail - whether or not the person's schedule should be emailed to them at the beginning of each week
+    ' FullTime - whether or not the employee works full-time
+    ' WorkDaysHours - the number of hours for each of the 7 days of the week the person works starting with Sunday
+    ' Active - whether the person is current or an ex-employee
+    ' Contractor - whether the person is a contractor or not
+    ' Tags - any tags related to the person
+    ' StartDate - the date the person started working in one of the following forms: YYYY-MM-DD, YY-MM-DD, DD-MM-YYYY
+    ' EndDate - the date the person will stop working in one of the following forms: YYYY-MM-DD, YY-MM-DD, DD-MM-YYYY
+    ' DefaultHourlyRate - the hourly rate of the person
     
     Dim Request As Object
     Set Request = CreateObject("MSXML2.XMLHTTP")
