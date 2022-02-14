@@ -562,3 +562,49 @@ Public Sub CreateTimeOff(Authorization As String, UserAgent As String, TimeOffTy
     End If
 
 End Sub
+        
+        
+Public Sub CreateTimeOffType(Authorization As String, UserAgent As String, TimeOffTypeName As String, Optional Color As String)
+
+    ' Purpose:
+    ' Create a new TimeOff Type on Float
+    
+    ' Parameters:
+    ' Authorization - your unique API token provided by Float
+    ' UserAgent - organization name and email address ex. "John's Bakery (John.Doe@Bakery.com)"
+    ' TimeOffTypeName - the name of this timeoff type
+    ' Color - the hexidecimal color the timeoff type
+    
+    
+    Dim Request As Object
+    Set Request = CreateObject("MSXML2.XMLHTTP")
+    
+    With Request
+
+        .Open "POST", "https://api.float.com/v3/timeoff-types", False
+
+        .setRequestHeader "Authorization", "Bearer " & Authorization
+        .setRequestHeader "User-Agent", UserAgent
+        .setRequestHeader "Content-Type", "application/json"
+        
+    End With
+    
+    Dim Body As String, Message As String
+    Body = "{" & Chr(34) & "timeoff_type_name" & Chr(34) & ":" & Chr(34) & TimeOffTypeName & Chr(34)
+    Body = Body & "," & Chr(34) & "color" & Chr(34) & ":" & Chr(34) & Color & Chr(34)
+    
+    Body = Body & "}"
+    Request.send Body
+    
+    ' Invalid field
+    If Request.Status = 422 Then
+    
+        Message = "No time off created." & vbNewLine & vbNewLine
+        Message = Message & "Float API responded with: 422 Unprocessable Entity - The data supplied has failed validation." & vbNewLine & vbNewLine
+        Message = Message & Request.responseText
+        
+        MsgBox Prompt:=Message, Buttons:=vbCritical, Title:="Bad Parameters"
+        
+    End If
+
+End Sub
