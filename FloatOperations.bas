@@ -86,6 +86,57 @@ Public Sub CreateDepartment(Authorization As String, UserAgent As String, Depart
     End If
 
 End Sub
+        
+        
+Public Sub CreateMilestone(Authorization As String, UserAgent As String, Name As String, ProjectID As Long, StartDate As String, _
+    Optional EndDate As String)
+
+    ' Purpose:
+    ' Create a new Milestone on Float
+    
+    ' Parameters:
+    ' Authorization - your unique API token provided by Float
+    ' UserAgent - organization name and email address ex. "John's Bakery (John.Doe@Bakery.com)"
+    ' Name - the name of the milestone
+    ' ProjectID - the project_id on Float of the Project this milestone belongs to
+    ' StartDate - the date the milestone starts in the form YYYY-MM-DD
+    ' EndDate - the date the milestone ends in the form YYYY-MM-DD
+    
+    
+    Dim Request As Object
+    Set Request = CreateObject("MSXML2.XMLHTTP")
+    
+    With Request
+
+        .Open "POST", "https://api.float.com/v3/milestones", False
+
+        .setRequestHeader "Authorization", "Bearer " & Authorization
+        .setRequestHeader "User-Agent", UserAgent
+        .setRequestHeader "Content-Type", "application/json"
+        
+    End With
+    
+    Dim Body As String, Message As String
+    Body = "{" & Chr(34) & "name" & Chr(34) & ":" & Chr(34) & Name & Chr(34)
+    Body = Body & "," & Chr(34) & "project_id" & Chr(34) & ":" & Chr(34) & ProjectID & Chr(34)
+    Body = Body & "," & Chr(34) & "date" & Chr(34) & ":" & Chr(34) & StartDate & Chr(34)
+    Body = Body & "," & Chr(34) & "end_date" & Chr(34) & ":" & Chr(34) & EndDate & Chr(34)
+    
+    Body = Body & "}"
+    Request.send Body
+    
+    ' Invalid field
+    If Request.Status = 422 Then
+    
+        Message = "No department created." & vbNewLine & vbNewLine
+        Message = Message & "Float API responded with: 422 Unprocessable Entity - The data supplied has failed validation." & vbNewLine & vbNewLine
+        Message = Message & Request.responseText
+        
+        MsgBox Prompt:=Message, Buttons:=vbCritical, Title:="Bad Parameters"
+        
+    End If
+
+End Sub
     
 
 Public Sub CreatePerson(Authorization As String, UserAgent As String, Name As String, Optional Email As String, Optional JobTitle As String, _
