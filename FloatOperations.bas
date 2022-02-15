@@ -1,5 +1,49 @@
 Option Explicit
 
+Public Sub CreateClient(Authorization As String, UserAgent As String, ClientName As String)
+
+    ' Purpose:
+    ' Create a new Client on Float
+    
+    ' Parameters:
+    ' Authorization - your unique API token provided by Float
+    ' UserAgent - organization name and email address ex. "John's Bakery (John.Doe@Bakery.com)"
+    ' ClientName - the name of the client
+    
+    
+    Dim Request As Object
+    Set Request = CreateObject("MSXML2.XMLHTTP")
+    
+    With Request
+
+        .Open "POST", "https://api.float.com/v3/clients", False
+
+        .setRequestHeader "Authorization", "Bearer " & Authorization
+        .setRequestHeader "User-Agent", UserAgent
+        .setRequestHeader "Content-Type", "application/json"
+        
+    End With
+    
+    Dim Body As String, Message As String
+    Body = "{" & Chr(34) & "name" & Chr(34) & ":" & Chr(34) & ClientName & Chr(34)
+    
+    Body = Body & "}"
+    Request.send Body
+    
+    ' Invalid field
+    If Request.Status = 422 Then
+    
+        Message = "No client created." & vbNewLine & vbNewLine
+        Message = Message & "Float API responded with: 422 Unprocessable Entity - The data supplied has failed validation." & vbNewLine & vbNewLine
+        Message = Message & Request.responseText
+        
+        MsgBox Prompt:=Message, Buttons:=vbCritical, Title:="Bad Parameters"
+        
+    End If
+
+End Sub
+    
+
 Public Sub CreatePerson(Authorization As String, UserAgent As String, Name As String, Optional Email As String, Optional JobTitle As String, _
     Optional DepartmentID As Long, Optional Notes As String, Optional AutoEmail As Boolean = False, Optional FullTime As Boolean = True, _
     Optional WorkDaysHours As Collection, Optional Active As Boolean = True, Optional Contractor As Boolean = False, _
