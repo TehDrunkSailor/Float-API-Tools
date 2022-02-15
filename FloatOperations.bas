@@ -43,6 +43,50 @@ Public Sub CreateClient(Authorization As String, UserAgent As String, ClientName
 
 End Sub
     
+    
+Public Sub CreateDepartment(Authorization As String, UserAgent As String, Department As String)
+
+    ' Purpose:
+    ' Create a new Department on Float
+    
+    ' Parameters:
+    ' Authorization - your unique API token provided by Float
+    ' UserAgent - organization name and email address ex. "John's Bakery (John.Doe@Bakery.com)"
+    ' Department - the name of the department
+    
+    
+    Dim Request As Object
+    Set Request = CreateObject("MSXML2.XMLHTTP")
+    
+    With Request
+
+        .Open "POST", "https://api.float.com/v3/departments", False
+
+        .setRequestHeader "Authorization", "Bearer " & Authorization
+        .setRequestHeader "User-Agent", UserAgent
+        .setRequestHeader "Content-Type", "application/json"
+        
+    End With
+    
+    Dim Body As String, Message As String
+    Body = "{" & Chr(34) & "name" & Chr(34) & ":" & Chr(34) & Department & Chr(34)
+    
+    Body = Body & "}"
+    Request.send Body
+    
+    ' Invalid field
+    If Request.Status = 422 Then
+    
+        Message = "No department created." & vbNewLine & vbNewLine
+        Message = Message & "Float API responded with: 422 Unprocessable Entity - The data supplied has failed validation." & vbNewLine & vbNewLine
+        Message = Message & Request.responseText
+        
+        MsgBox Prompt:=Message, Buttons:=vbCritical, Title:="Bad Parameters"
+        
+    End If
+
+End Sub
+    
 
 Public Sub CreatePerson(Authorization As String, UserAgent As String, Name As String, Optional Email As String, Optional JobTitle As String, _
     Optional DepartmentID As Long, Optional Notes As String, Optional AutoEmail As Boolean = False, Optional FullTime As Boolean = True, _
