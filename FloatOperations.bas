@@ -795,3 +795,74 @@ Public Sub CreateTimeOffType(Authorization As String, UserAgent As String, TimeO
     End If
 
 End Sub
+                            
+                            
+Public Function GetPeople(Authorization As String, UserAgent As String, Optional PeopleID As Long = 0) As String
+
+    ' Purpose:
+    ' Return the information on all people in the team or a specific person
+    
+    ' Parameters:
+    ' Authorization - your unique API token provided by Float
+    ' UserAgent - organization name and email address ex. "John's Bakery (John.Doe@Bakery.com)"
+    ' PeopleID - the people_id on Float of a single person
+    '          - if none is passed then all people are returned
+
+    Dim Request As Object
+    Set Request = CreateObject("MSXML2.XMLHTTP")
+    
+    With Request
+    
+        Dim Response As String
+    
+        If PeopleID = 0 Then
+        
+            Dim Page As Long, ResponseLength As Long
+            Page = 1
+            
+            ' Empty responses have a length of 2
+            Do While ResponseLength <> 2
+            
+                .Open "GET", "https://api.float.com/v3/people?page=" & Page & "&per-page=200", False ' 200 per page max
+            
+                .setRequestHeader "Authorization", "Bearer " & Authorization
+                .setRequestHeader "User-Agent", UserAgent
+                .setRequestHeader "Content-Type", "application/json"
+            
+                .send
+                
+                Response = Response & .responseText
+                ResponseLength = Len(.responseText)
+                Page = Page + 1
+            
+            Loop
+            
+        Else
+        
+            .Open "GET", "https://api.float.com/v3/people/" & PeopleID, False ' 200 per page max
+            
+            .setRequestHeader "Authorization", "Bearer " & Authorization
+            .setRequestHeader "User-Agent", UserAgent
+            .setRequestHeader "Content-Type", "application/json"
+        
+            .send
+            
+            Response = .responseText
+            
+            If .Status = 404 Then
+            
+                Dim Message As String
+                Message = "People not found.  Nobody on the team has the people_id of " & PeopleID & "."
+                
+                MsgBox Prompt:=Message, Buttons:=vbCritical, Title:="No People"
+                Exit Function
+                
+            End If
+            
+        End If
+    
+    End With
+    
+    GetPeople = Response
+
+End Function
