@@ -866,3 +866,75 @@ Public Function GetPeople(Authorization As String, UserAgent As String, Optional
     GetPeople = Response
 
 End Function
+                                    
+                                    
+Public Function GetProjects(Authorization As String, UserAgent As String, Optional ProjectID As Long = 0) As String
+
+    ' Purpose:
+    ' Return the information on all projects for the team or a single project
+    
+    ' Parameters:
+    ' Authorization - your unique API token provided by Float
+    ' UserAgent - organization name and email address ex. "John's Bakery (John.Doe@Bakery.com)"
+    ' PeopleID - the project_id on Float of a single project
+    '          - if none is passed then all projects are returned
+    
+    
+    Dim Request As Object
+    Set Request = CreateObject("MSXML2.XMLHTTP")
+    
+    With Request
+    
+        Dim Response As String
+        
+        If ProjectID = 0 Then
+        
+            Dim Page As Long, ResponseLength As Long
+            Page = 1
+            
+            ' Empty responses have a length of 2
+            Do While ResponseLength <> 2
+            
+                .Open "GET", "https://api.float.com/v3/projects?page=" & Page & "&per-page=200", False ' 200 per page max
+            
+                .setRequestHeader "Authorization", "Bearer " & Authorization
+                .setRequestHeader "User-Agent", UserAgent
+                .setRequestHeader "Content-Type", "application/json"
+            
+                .send
+                
+                Response = Response & .responseText
+                ResponseLength = Len(.responseText)
+                Page = Page + 1
+            
+            Loop
+            
+        Else
+        
+            .Open "GET", "https://api.float.com/v3/projects/" & ProjectID, False ' 200 per page max
+            
+            .setRequestHeader "Authorization", "Bearer " & Authorization
+            .setRequestHeader "User-Agent", UserAgent
+            .setRequestHeader "Content-Type", "application/json"
+        
+            .send
+            
+            Response = .responseText
+            
+            If .Status = 404 Then
+            
+                Dim Message As String
+                Message = "Project not found.  No projects for the team have the project_id of " & ProjectID & "."
+                
+                MsgBox Prompt:=Message, Buttons:=vbCritical, Title:="No Projects"
+                Exit Function
+                
+            End If
+            
+        End If
+        
+    End With
+    
+    GetProjects = Response
+
+End Function
