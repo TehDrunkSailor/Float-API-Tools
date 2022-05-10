@@ -1010,3 +1010,46 @@ Public Function GetDepartments(Authorization As String, UserAgent As String, Opt
     GetDepartments = Response
 
 End Function
+                                                    
+                                                    
+Public Sub DeleteDepartment(Authorization As String, UserAgent As String, DepartmentID As Long)
+
+    ' Purpose:
+    ' Delete the department with the corresponding DepartmentID
+    
+    ' Parameters:
+    ' Authorization - your unique API token provided by Float
+    ' UserAgent - organization name and email address ex. "John's Bakery (John.Doe@Bakery.com)"
+    ' DepartmentID - the department_id on Float of the department
+    
+    
+    Dim Request As Object
+    Set Request = CreateObject("MSXML2.XMLHTTP")
+    
+    With Request
+    
+        Dim Response As String
+        
+        .Open "DELETE", "https://api.float.com/v3/departments/" & DepartmentID, False
+        
+        .setRequestHeader "Authorization", "Bearer " & Authorization
+        .setRequestHeader "User-Agent", UserAgent
+        .setRequestHeader "Content-Type", "application/json"
+    
+        .send
+        
+        Response = .responseText
+        
+        If .Status = 404 Then
+        
+            Dim Message As String
+            Message = "Department not found.  No departments for the team have the department_id of " & DepartmentID & "."
+            
+            MsgBox Prompt:=Message, Buttons:=vbCritical, Title:="No Department"
+            Exit Sub
+            
+        End If
+            
+    End With
+    
+End Sub
