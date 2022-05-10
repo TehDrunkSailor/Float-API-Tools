@@ -1084,6 +1084,49 @@ Public Function GetDepartments(Authorization As String, UserAgent As String, Opt
 End Function
                                                     
                                                     
+Public Sub DeleteClient(Authorization As String, UserAgent As String, ClientID As Long)
+
+    ' Purpose:
+    ' Delete the client with the corresponding ClientID
+    
+    ' Parameters:
+    ' Authorization - your unique API token provided by Float
+    ' UserAgent - organization name and email address ex. "John's Bakery (John.Doe@Bakery.com)"
+    ' ClientID - the client_id on Float of the client
+    
+    
+    Dim Request As Object
+    Set Request = CreateObject("MSXML2.XMLHTTP")
+    
+    With Request
+    
+        Dim Response As String
+        
+        .Open "DELETE", "https://api.float.com/v3/clients/" & ClientID, False
+        
+        .setRequestHeader "Authorization", "Bearer " & Authorization
+        .setRequestHeader "User-Agent", UserAgent
+        .setRequestHeader "Content-Type", "application/json"
+    
+        .send
+        
+        Response = .responseText
+        
+        If .Status = 404 Then
+        
+            Dim Message As String
+            Message = "Client not found.  No clients for the team have the client_id of " & ClientID & "."
+            
+            MsgBox Prompt:=Message, Buttons:=vbCritical, Title:="No Client"
+            Exit Sub
+            
+        End If
+            
+    End With
+    
+End Sub
+
+                                                                                                                        
 Public Sub DeleteDepartment(Authorization As String, UserAgent As String, DepartmentID As Long)
 
     ' Purpose:
