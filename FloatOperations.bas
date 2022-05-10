@@ -948,8 +948,8 @@ Public Function GetDepartments(Authorization As String, UserAgent As String, Opt
     ' Parameters:
     ' Authorization - your unique API token provided by Float
     ' UserAgent - organization name and email address ex. "John's Bakery (John.Doe@Bakery.com)"
-    ' PeopleID - the department_id on Float of a single department
-    '          - if none is passed then all departments are returned
+    ' DepartmentID - the department_id on Float of a single department
+    '              - if none is passed then all departments are returned
     
     
     Dim Request As Object
