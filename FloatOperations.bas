@@ -797,6 +797,78 @@ Public Sub CreateTimeOffType(Authorization As String, UserAgent As String, TimeO
 End Sub
                             
                             
+Public Function GetClients(Authorization As String, UserAgent As String, Optional ClientID As Long = 0) As String
+
+    ' Purpose:
+    ' Return the information on all clients for the team or a single client
+    
+    ' Parameters:
+    ' Authorization - your unique API token provided by Float
+    ' UserAgent - organization name and email address ex. "John's Bakery (John.Doe@Bakery.com)"
+    ' ClientID - the client_id on Float of a single client
+    '          - if none is passed then all clients are returned
+    
+    
+    Dim Request As Object
+    Set Request = CreateObject("MSXML2.XMLHTTP")
+    
+    With Request
+    
+        Dim Response As String
+        
+        If ClientID = 0 Then
+        
+            Dim Page As Long, ResponseLength As Long
+            Page = 1
+            
+            ' Empty responses have a length of 2
+            Do While ResponseLength <> 2
+            
+                .Open "GET", "https://api.float.com/v3/clients?page=" & Page & "&per-page=200", False ' 200 per page max
+            
+                .setRequestHeader "Authorization", "Bearer " & Authorization
+                .setRequestHeader "User-Agent", UserAgent
+                .setRequestHeader "Content-Type", "application/json"
+            
+                .send
+                
+                Response = Response & .responseText
+                ResponseLength = Len(.responseText)
+                Page = Page + 1
+            
+            Loop
+            
+        Else
+        
+            .Open "GET", "https://api.float.com/v3/clients/" & ClientID, False
+            
+            .setRequestHeader "Authorization", "Bearer " & Authorization
+            .setRequestHeader "User-Agent", UserAgent
+            .setRequestHeader "Content-Type", "application/json"
+        
+            .send
+            
+            Response = .responseText
+            
+            If .Status = 404 Then
+            
+                Dim Message As String
+                Message = "Client not found.  No clients for the team have the client_id of " & ClientID & "."
+                
+                MsgBox Prompt:=Message, Buttons:=vbCritical, Title:="No Clients"
+                Exit Function
+                
+            End If
+            
+        End If
+        
+    End With
+    
+    GetClients = Response
+
+End Function                            
+                            
+                            
 Public Function GetPeople(Authorization As String, UserAgent As String, Optional PeopleID As Long = 0) As String
 
     ' Purpose:
