@@ -938,3 +938,75 @@ Public Function GetProjects(Authorization As String, UserAgent As String, Option
     GetProjects = Response
 
 End Function
+                                            
+                                            
+Public Function GetDepartments(Authorization As String, UserAgent As String, Optional DepartmentID As Long = 0) As String
+
+    ' Purpose:
+    ' Return the information on all departments for the team or a single department
+    
+    ' Parameters:
+    ' Authorization - your unique API token provided by Float
+    ' UserAgent - organization name and email address ex. "John's Bakery (John.Doe@Bakery.com)"
+    ' PeopleID - the department_id on Float of a single department
+    '          - if none is passed then all departments are returned
+    
+    
+    Dim Request As Object
+    Set Request = CreateObject("MSXML2.XMLHTTP")
+    
+    With Request
+    
+        Dim Response As String
+        
+        If DepartmentID = 0 Then
+        
+            Dim Page As Long, ResponseLength As Long
+            Page = 1
+            
+            ' Empty responses have a length of 2
+            Do While ResponseLength <> 2
+            
+                .Open "GET", "https://api.float.com/v3/departments?page=" & Page & "&per-page=200", False ' 200 per page max
+            
+                .setRequestHeader "Authorization", "Bearer " & Authorization
+                .setRequestHeader "User-Agent", UserAgent
+                .setRequestHeader "Content-Type", "application/json"
+            
+                .send
+                
+                Response = Response & .responseText
+                ResponseLength = Len(.responseText)
+                Page = Page + 1
+            
+            Loop
+            
+        Else
+        
+            .Open "GET", "https://api.float.com/v3/departments/" & DepartmentID, False
+            
+            .setRequestHeader "Authorization", "Bearer " & Authorization
+            .setRequestHeader "User-Agent", UserAgent
+            .setRequestHeader "Content-Type", "application/json"
+        
+            .send
+            
+            Response = .responseText
+            
+            If .Status = 404 Then
+            
+                Dim Message As String
+                Message = "Department not found.  No departments for the team have the department_id of " & DepartmentID & "."
+                
+                MsgBox Prompt:=Message, Buttons:=vbCritical, Title:="No Departments"
+                Exit Function
+                
+            End If
+            
+        End If
+        
+    End With
+    
+    GetDepartments = Response
+
+End Function
